@@ -104,6 +104,21 @@ class MyPromise {
     return this.then(null, errorCallback);
   }
 
+  finally(callback) {
+    this.then(
+      (value) => {
+        return Promise.resolve(callback()).then(() => {
+          return value;
+        });
+      },
+      (error) => {
+        return Promise.resolve(callback()).then(() => {
+          throw error;
+        });
+      }
+    );
+  }
+
   static resolve(value) {
     if (value instanceof MyPromise) return value;
 
@@ -119,6 +134,31 @@ class MyPromise {
   static reject(reason) {
     return new MyPromise((resolve, reject) => {
       reject(reason);
+    });
+  }
+
+  static all(promises) {
+    return new MyPromise((resolve, reject) => {
+      let result = [],
+        len = promises.length,
+        index = 0;
+
+      if (len === 0) {
+        resolve(result);
+        return;
+      }
+
+      for (let i = 0; i < len; i++) {
+        MyPromise.resolve(promises[i])
+          .then((value) => {
+            result[i] = value;
+            index++;
+            if (index === len) resolve(result);
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      }
     });
   }
 }
