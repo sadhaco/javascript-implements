@@ -161,6 +161,26 @@ class MyPromise {
       }
     });
   }
+
+  static race(promises) {
+    return new MyPromise((resolve, reject) => {
+      let len = promises.length;
+
+      if (len === 0) return;
+
+      for (let i = 0; i < len; i++) {
+        MyPromise.resolve(promises[i])
+          .then((value) => {
+            resolve(value);
+            return;
+          })
+          .catch((error) => {
+            reject(error);
+            return;
+          });
+      }
+    });
+  }
 }
 
 function resolvePromise(promise2, x, resolve, reject) {
